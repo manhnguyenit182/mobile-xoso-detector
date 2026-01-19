@@ -1,5 +1,6 @@
 package com.example.xoso.crawldata;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -21,9 +22,11 @@ public class GetXoSo {
     doc.outputSettings().indentAmount(2).prettyPrint(true);
 
     // TODO toi kiem tra lai du lieu
-    Date currentDate = new Date();
+    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+    String currentDate = sdf.format(new Date());
     System.out.println("Ngày hiện tại: " + currentDate);
-    if (doc.text().contains("13-01-2026")) {
+
+    if (doc.text().contains(currentDate)) {
       System.out.println("Có text này trong trang!");
       isNewData = true;
     }
@@ -50,37 +53,48 @@ public class GetXoSo {
       System.out.println("Số tỉnh trong ngày: " + numOfProvinces);
 
       // Tạo cấu trúc JSON
-      Map<String, List<Map<String, String>>> result = new LinkedHashMap<>();
+      Map<String, Map<String, List<String>>> result = new LinkedHashMap<>();
+
       for (String province : provinceList) {
-        result.put(province, new ArrayList<>());
+        result.put(province, new LinkedHashMap<>());
       }
+
       // giải đặc biệt
       List<Map<String, String>> ListGrandPrize = new ArrayList<>();
-      addToJsonArray(ListGrandPrize, doc, "1", numOfProvinces, provinceList, result);
+      addToJsonArray(ListGrandPrize, doc, "1", numOfProvinces, provinceList,
+          result);
       // giải nhất
       List<Map<String, String>> ListFirstPrize = new ArrayList<>();
-      addToJsonArray(ListFirstPrize, doc, "2", numOfProvinces, provinceList, result);
+      addToJsonArray(ListFirstPrize, doc, "2", numOfProvinces, provinceList,
+          result);
       // giải nhì
       List<Map<String, String>> ListSecondPrize = new ArrayList<>();
-      addToJsonArray(ListSecondPrize, doc, "3", numOfProvinces, provinceList, result);
+      addToJsonArray(ListSecondPrize, doc, "3", numOfProvinces, provinceList,
+          result);
       // giải ba
       List<Map<String, String>> ListThirdPrize = new ArrayList<>();
-      addToJsonArray(ListThirdPrize, doc, "4", numOfProvinces, provinceList, result);
+      addToJsonArray(ListThirdPrize, doc, "4", numOfProvinces, provinceList,
+          result);
       // giải tư
       List<Map<String, String>> ListFourthPrize = new ArrayList<>();
-      addToJsonArray(ListFourthPrize, doc, "5", numOfProvinces, provinceList, result);
+      addToJsonArray(ListFourthPrize, doc, "5", numOfProvinces, provinceList,
+          result);
       // giải năm
       List<Map<String, String>> ListFifthPrize = new ArrayList<>();
-      addToJsonArray(ListFifthPrize, doc, "6", numOfProvinces, provinceList, result);
+      addToJsonArray(ListFifthPrize, doc, "6", numOfProvinces, provinceList,
+          result);
       // giải sáu
       List<Map<String, String>> ListSixthPrize = new ArrayList<>();
-      addToJsonArray(ListSixthPrize, doc, "7", numOfProvinces, provinceList, result);
+      addToJsonArray(ListSixthPrize, doc, "7", numOfProvinces, provinceList,
+          result);
       // giải bảy
       List<Map<String, String>> ListSeventhPrize = new ArrayList<>();
-      addToJsonArray(ListSeventhPrize, doc, "8", numOfProvinces, provinceList, result);
+      addToJsonArray(ListSeventhPrize, doc, "8", numOfProvinces, provinceList,
+          result);
       // giải tám
       List<Map<String, String>> ListEighthPrize = new ArrayList<>();
-      addToJsonArray(ListEighthPrize, doc, "9", numOfProvinces, provinceList, result);
+      addToJsonArray(ListEighthPrize, doc, "9", numOfProvinces, provinceList,
+          result);
       JSONObject jsonResult = new JSONObject(result);
       return jsonResult.toString();
 
@@ -91,7 +105,7 @@ public class GetXoSo {
   }
 
   private void addToJsonArray(List<Map<String, String>> list, Document doc, String prizeType, int numOfProvinces,
-      List<String> provinceList, Map<String, List<Map<String, String>>> result) {
+      List<String> provinceList, Map<String, Map<String, List<String>>> result) {
     Elements items = doc.getElementsByAttributeValue("data-prize", prizeType);
     int limit = 0;
     // giới hạn số lượng phần tử thêm vào dựa trên loại giải
@@ -108,14 +122,17 @@ public class GetXoSo {
     }
 
     // thêm phần tử vào danh sách và phân bổ theo tỉnh thành
+    Map<String, List<String>> obj = new LinkedHashMap<>();
     for (int i = 0; i < limit; i++) {
       Element item = items.get(i);
-      Map<String, String> obj = new LinkedHashMap<>();
-      obj.put("value", item.attr("data-value"));
-      obj.put("prize", item.attr("data-prize"));
-      list.add(obj);
-      String province = provinceList.get(i % numOfProvinces);
-      result.get(province).add(obj);
+      System.out.println("item: " + item);
+      System.out.println(item.attr("data-value"));
+      if (result.get(provinceList.get(i % numOfProvinces)).get(prizeType) == null) {
+        result.get(provinceList.get(i % numOfProvinces)).put(prizeType, new ArrayList<>());
+      }
+      result.get(provinceList.get(i % numOfProvinces))
+          .get(prizeType).add(items.get(i % limit).attr("data-value"));
+      ;
     }
 
   }
