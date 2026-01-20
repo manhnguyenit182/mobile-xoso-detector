@@ -2,7 +2,11 @@ package com.example.xoso.model;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,8 +33,9 @@ public class DrawResult {
   @Column(nullable = false)
   private String prizeLevel;
 
-  @Column(columnDefinition = "JSONB")
-  private String numbers; // lưu JSON string
+  @Column(columnDefinition = "jsonb")
+  @JdbcTypeCode(SqlTypes.JSON)
+  private List<String> numbers; // lưu JSON string
 
   private String sourceUrl;
 

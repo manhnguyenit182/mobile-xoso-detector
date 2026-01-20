@@ -21,8 +21,9 @@ public class GetXoSo {
     // Nếu muốn “định dạng” HTML cho dễ nhìn:
     doc.outputSettings().indentAmount(2).prettyPrint(true);
 
-    // TODO toi kiem tra lai du lieu
     SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+    // SimpleDateFormat sdf = new SimpleDateFormat("EEEE dd-MM-yyyy", new
+    // Locale("vi", "VN"));
     String currentDate = sdf.format(new Date());
     System.out.println("Ngày hiện tại: " + currentDate);
 
@@ -38,7 +39,6 @@ public class GetXoSo {
     }
     // lấy tỉnh thành có trong ngày hôm đó
     Element numOfProvincesElement = doc.select("[data-quantity]").first();
-    System.out.println("elelement province" + numOfProvincesElement);
     if (numOfProvincesElement != null) {
       String quantity = numOfProvincesElement.attr("data-quantity");
       Elements spans = numOfProvincesElement.select("div.quantity-of-number span.wrap-text");
@@ -122,11 +122,7 @@ public class GetXoSo {
     }
 
     // thêm phần tử vào danh sách và phân bổ theo tỉnh thành
-    Map<String, List<String>> obj = new LinkedHashMap<>();
     for (int i = 0; i < limit; i++) {
-      Element item = items.get(i);
-      System.out.println("item: " + item);
-      System.out.println(item.attr("data-value"));
       if (result.get(provinceList.get(i % numOfProvinces)).get(prizeType) == null) {
         result.get(provinceList.get(i % numOfProvinces)).put(prizeType, new ArrayList<>());
       }
