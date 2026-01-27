@@ -56,12 +56,13 @@ public class CrawlScheduler {
 
           for (String prizeLevel : prizeLevels.keySet()) {
             List<String> numbers = prizeLevels.get(prizeLevel);
+            String numbersString = String.join(",", numbers) + ","; // Chuyển List thành String
 
             // Lưu cả List numbers vào một record thay vì tách từng số
             DrawResult drawResult = new DrawResult();
             drawResult.setProvinceCode(province);
             drawResult.setPrizeLevel(prizeLevel);
-            drawResult.setNumbers(numbers); // Lưu toàn bộ List
+            drawResult.setNumbers(numbersString); // Lưu toàn bộ List dưới dạng String
             drawResult.setDrawDate(new java.sql.Date(drawDate.getTime()).toLocalDate());
 
             drawResults.add(drawResult);

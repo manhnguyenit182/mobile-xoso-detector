@@ -1,5 +1,6 @@
 package com.example.xoso.dto.request;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import jakarta.validation.constraints.NotNull;
@@ -18,12 +19,13 @@ public class TicketRequest {
   @NotNull
   private UUID userId;
 
-  @Size(max = 1000, message = "Description must not exceed 1000 characters")
-  private String orcText;
+  @NotNull
+  @Size(min = 6, max = 6)
+  private String ticketNumber;
 
   @NotNull
   private String provinceCode;
 
   @NotNull
-  private String drawDate;
+  private LocalDate drawDate;
 }
