@@ -3,6 +3,7 @@ package com.example.xoso.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,9 +24,10 @@ public class CrawlScheduler {
   private DrawResultRepository drawResultRepository;
 
   private LocalDate lastSavedDate = null;
+  private Map<String, Map<String, List<String>>> lastFetchedData = new HashMap<>();
 
-  // Chạy từ 17:30 đến 18:59, cứ 10 phút một lần
-  @Scheduled(cron = "0 15/10 16-17 * * *", zone = "Asia/Ho_Chi_Minh")
+  // Chạy từ 17:30 đến 18:59, cứ 5 phút một lần
+  @Scheduled(cron = "0 */5 16-17 * * *", zone = "Asia/Ho_Chi_Minh")
   // @Scheduled(fixedRate = 10000, zone = "Asia/Ho_Chi_Minh")
   public void crawldataAt17h30() {
     LocalDate today = LocalDate.now();
@@ -48,33 +50,40 @@ public class CrawlScheduler {
             new TypeReference<Map<String, Map<String, List<String>>>>() {
             });
 
-        List<DrawResult> drawResults = new ArrayList<>();
-        Date drawDate = new Date();
+        if (lastFetchedData.equals(dataMap)) {
+          System.out.println("No changes in data since last fetch. Save to database.");
+          List<DrawResult> drawResults = new ArrayList<>();
+          Date drawDate = new Date();
 
-        for (String province : dataMap.keySet()) {
-          Map<String, List<String>> prizeLevels = dataMap.get(province);
+          for (String province : dataMap.keySet()) {
+            Map<String, List<String>> prizeLevels = dataMap.get(province);
 
-          for (String prizeLevel : prizeLevels.keySet()) {
-            List<String> numbers = prizeLevels.get(prizeLevel);
-            String numbersString = String.join(",", numbers) + ","; // Chuyển List thành String
+            for (String prizeLevel : prizeLevels.keySet()) {
+              List<String> numbers = prizeLevels.get(prizeLevel);
+              String numbersString = String.join(",", numbers) + ","; // Chuyển List thành String
 
-            // Lưu cả List numbers vào một record thay vì tách từng số
-            DrawResult drawResult = new DrawResult();
-            drawResult.setProvinceCode(province);
-            drawResult.setPrizeLevel(prizeLevel);
-            drawResult.setNumbers(numbersString); // Lưu toàn bộ List dưới dạng String
-            drawResult.setDrawDate(new java.sql.Date(drawDate.getTime()).toLocalDate());
+              // Lưu cả List numbers vào một record thay vì tách từng số
+              DrawResult drawResult = new DrawResult();
+              drawResult.setProvinceCode(province);
+              drawResult.setPrizeLevel(prizeLevel);
+              drawResult.setNumbers(numbersString); // Lưu toàn bộ List dưới dạng String
+              drawResult.setDrawDate(new java.sql.Date(drawDate.getTime()).toLocalDate());
 
-            drawResults.add(drawResult);
+              drawResults.add(drawResult);
+            }
           }
+
+          // Lưu tất cả cùng lúc
+          drawResultRepository.saveAll(drawResults);
+          System.out.println("Saved " + drawResults.size() + " records to database.");
+
+          lastSavedDate = today;
+          System.out.println("Data saved successfully. Scheduler will skip until tomorrow.");
+          return;
+        } else {
+          lastFetchedData = dataMap;
         }
 
-        // Lưu tất cả cùng lúc
-        drawResultRepository.saveAll(drawResults);
-        System.out.println("Saved " + drawResults.size() + " records to database.");
-
-        lastSavedDate = today;
-        System.out.println("Data saved successfully. Scheduler will skip until tomorrow.");
       } else {
         System.out.println("No new data available.");
       }
