@@ -1,112 +1,151 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { Button, Text, TextInput, View, Pressable, Modal, FlatList, StyleSheet, Alert } from 'react-native';
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { checkTicketWithBackend } from '../../services/imageAnalysisService';
+const PROVINCES = [
+  { name: 'Hồ Chí Minh' },
+  { name: 'Đồng Tháp' },
+  { name: 'Cà Mau' },
+  { name: 'Bến Tre' },
+  { name: 'Vũng Tàu' },
+  { name: 'Bạc Liêu' },
+  { name: 'Đồng Nai' },
+  { name: 'Cần Thơ' },
+  { name: 'Sóc Trăng' },
+  { name: 'Tây Ninh' },
+  { name: 'An Giang' },
+  { name: 'Bình Thuận' },
+  { name: 'Vĩnh Long' },
+  { name: 'Bình Dương' },
+  { name: 'Trà Vinh' },
+  { name: 'Long An' },
+  { name: 'Bình Phước' },
+  { name: 'Hậu Giang' },
+  { name: 'Tiền Giang' },
+  { name: 'Kiên Giang' },
+  { name: 'Đà Lạt' },
+];
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+export default function HomeScreen() {
+  const [ticketNumber, setTicketNumber] = useState('');
+  const [drawDate, setDrawDate] = useState('');
+  const [provinceName, setProvinceName] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
-export default function TabTwoScreen() {
+  const showDatePicker = () => {
+    DateTimePickerAndroid.open({
+      value: drawDate ? new Date(drawDate) : new Date(),
+      onChange: (event, selectedDate) => {
+        if (event.type === 'set' && selectedDate) {
+          const formattedDate = selectedDate.toISOString().split('T')[0];
+          setDrawDate(formattedDate);
+        }
+      },
+      mode: 'date',
+    });
+  };
+
+  const selectProvince = (name: string) => {
+    setProvinceName(name);
+    setModalVisible(false);
+  };
+
+  const getProvinceName = () => {
+    const province = PROVINCES.find((p) => p.name === provinceName);
+    return province ? `${province.name}` : 'Chọn đài xổ số';
+  };
+
+  const handleSubmit = async () => {
+    console.log('Số vé:', ticketNumber);
+    console.log('Ngày xổ số:', drawDate);
+    console.log('Đài xổ số:', provinceName);
+    try {
+      const response = await checkTicketWithBackend({
+        so_ve: ticketNumber,
+        ngay_xo_so: drawDate,
+        dai_xo_so: provinceName,
+      });
+      Alert.alert('Kết quả từ backend', JSON.stringify(response));
+    } catch (error) {
+      console.error('Error submitting ticket data:', error);
+      Alert.alert('Lỗi', 'Không thể gửi dữ liệu vé số lên backend');
+    }
+  };
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View>
+      <Text>Home Screen</Text>
+      <Text>Số vé:</Text>{' '}
+      <TextInput
+        style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+        placeholder="Nhập số vé"
+        value={ticketNumber}
+        keyboardType="numeric"
+        maxLength={6}
+        onChangeText={setTicketNumber}
+      />{' '}
+      <Text>Ngày xổ số:</Text>{' '}
+      <Pressable
+        style={{ borderWidth: 1, marginBottom: 10, padding: 8, backgroundColor: '#f0f0f0' }}
+        onPress={showDatePicker}
+      >
+        <Text>{drawDate || 'Chọn ngày (YYYY-MM-DD)'}</Text>
+      </Pressable>{' '}
+      <Text>Đài xổ số:</Text>{' '}
+      <Pressable
+        style={{ borderWidth: 1, marginBottom: 10, padding: 8, backgroundColor: '#f0f0f0' }}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text>{getProvinceName()}</Text>
+      </Pressable>{' '}
+      <Button title="Gửi dữ liệu" onPress={handleSubmit} />
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Chọn đài xổ số</Text>
+            <FlatList
+              data={PROVINCES}
+              keyExtractor={(item) => item.name}
+              renderItem={({ item }) => (
+                <Pressable style={styles.provinceItem} onPress={() => selectProvince(item.name)}>
+                  <Text>{item.name}</Text>
+                </Pressable>
+              )}
+            />
+            <Button title="Đóng" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    maxHeight: '70%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  provinceItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
 });

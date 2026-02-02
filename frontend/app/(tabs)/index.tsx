@@ -1,18 +1,16 @@
-import axios from 'axios';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
-import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { useRef, useState } from 'react';
 
 import { ActivityIndicator, Alert, Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { analyzeTicketImage } from '../../services/imageAnalysisService';
+
 export default function HomeScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [photo, setPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const cameraRef = useRef<CameraView>(null);
-  const API_KEY = 'AIzaSyDPCzqZQZtz3nQn-RSiLGNdhuZIEkREB90';
-  const GEMINIAPI_KEY = 'AIzaSyDPQWUa9c_cANL9fpNb4YxP0dOLBzzCUTk';
   if (!permission) {
     return <View />;
   }
@@ -70,98 +68,13 @@ export default function HomeScreen() {
 
     setLoading(true);
     try {
-      // Đọc ảnh và chuyển sang base64
-      const base64 = await FileSystem.readAsStringAsync(photo, {
-        encoding: 'base64',
-      });
-
-      // Gửi request đến Google Cloud Vision API
-      const response = await axios.post(`https://vision.googleapis.com/v1/images:annotate?key=${API_KEY}`, {
-        requests: [
-          {
-            image: {
-              content: base64,
-            },
-            features: [
-              {
-                type: 'TEXT_DETECTION',
-                maxResults: 10,
-              },
-            ],
-          },
-        ],
-      });
-
-      const textAnnotations = response.data.responses[0]?.textAnnotations;
-      if (textAnnotations && textAnnotations.length > 0) {
-        const detectedText = textAnnotations[0].description;
-        const genResponse = await axios.post(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent',
-          {
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `Bạn là một hệ thống trích xuất dữ liệu có cấu trúc từ văn bản OCR của vé số Việt Nam.
-
-NHIỆM VỤ DUY NHẤT:
-- Phân tích văn bản OCR đầu vào
-- Trả về DUY NHẤT một object JSON hợp lệ
-
-ĐỊNH DẠNG BẮT BUỘC:
-- Chỉ được trả về JSON thuần
-- Không được giải thích
-- Không được thêm markdown
-- Không được thêm text trước hoặc sau JSON
-- Không được xuống dòng thừa
-- Không được thêm field ngoài schema
-
-SCHEMA DUY NHẤT ĐƯỢC PHÉP:
-
-{
-  "so_ve": "string | null",
-  "ngay_xo_so": "dd-mm-yyyy | null",
-  "dai_xo_so": "string | null"
-}
-
-QUY TẮC TRÍCH XUẤT:
-- Chỉ trích xuất dữ liệu nếu xuất hiện RÕ RÀNG trong OCR
-- Không suy đoán
-- Không tự sửa định dạng
-- Nếu không tìm thấy → trả về null cho field đó
-- Tên đài phải được chuẩn hoá (ví dụ: "BÌNH THUẬN" → "Bình Thuận")
-
-Văn bản OCR:
-
-${detectedText}`,
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              thinkingConfig: {
-                thinkingLevel: 'low',
-              },
-            },
-          },
-          {
-            headers: {
-              'x-goog-api-key': GEMINIAPI_KEY,
-              'Content-Type': 'application/json',
-            },
-          },
-        );
-        const data = genResponse.data.candidates[0].content.parts[0].text;
-        console.log('Response from generative language model:', data);
-        Alert.alert('Kết quả phân tích', data);
-        // TODO gửi data về backend để lưu vào database và trả lại kết quả cho người dùng
-      } else {
-        Alert.alert('Thông báo', 'Không phát hiện văn bản nào trong ảnh');
-      }
+      const result = await analyzeTicketImage(photo);
+      Alert.alert('Kết quả', JSON.stringify(result));
     } catch (error: any) {
       console.error('Error analyzing image:', error);
-      const errorMessage = error.response?.data?.error?.message || error.message || 'Không thể phân tích ảnh';
-      Alert.alert('Lỗi', errorMessage);
+      const errorMessage =
+        error.response?.data?.error?.message || error.response?.data || error.message || 'Không thể phân tích ảnh';
+      Alert.alert('Lỗi', typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
     } finally {
       setLoading(false);
     }
