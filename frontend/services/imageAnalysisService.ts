@@ -1,9 +1,28 @@
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system/legacy';
 
-const API_KEY = process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY;
-const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://unmanually-egestive-viki.ngrok-free.dev';
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://10.0.2.2:8080';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AnalyzeTicketResponse {
+  ticketNumber: string | null;
+  drawDate: string | null;
+  provinceCode: string | null;
+  resultsAvailable: boolean;
+  prizes: PrizeResult[];
+  errorMessage: string | null;
+}
+
+export interface PrizeResult {
+  prizeLevel: string;
+  prizeAmount: number;
+  ticketNumber: string;
+  provinceCode: string;
+  drawDate: string;
+}
 
 export interface TicketData {
   so_ve: string | null;
@@ -11,15 +30,20 @@ export interface TicketData {
   dai_xo_so: string | null;
 }
 
-export interface BackendResponse {
-  ticketNumber: string;
-  drawDate: string;
-  provinceCode: string;
-  result: any;
+export interface BackendCheckResponse {
+  prizeLevel?: string;
+  prizeAmount?: number;
+  ticketNumber?: string;
+  provinceCode?: string;
+  drawDate?: string;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Utility
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
- * Đọc ảnh và chuyển sang base64
+ * Đọc file ảnh và chuyển sang base64
  */
 export async function convertImageToBase64(photoUri: string): Promise<string> {
   return await FileSystem.readAsStringAsync(photoUri, {
@@ -27,106 +51,38 @@ export async function convertImageToBase64(photoUri: string): Promise<string> {
   });
 }
 
-/**
- * Sử dụng Google Cloud Vision API để OCR text từ ảnh
- */
-export async function extractTextFromImage(base64Image: string): Promise<string> {
-  const response = await axios.post(`https://vision.googleapis.com/v1/images:annotate?key=${API_KEY}`, {
-    requests: [
-      {
-        image: {
-          content: base64Image,
-        },
-        features: [
-          {
-            type: 'TEXT_DETECTION',
-            maxResults: 10,
-          },
-        ],
-      },
-    ],
-  });
-
-  const textAnnotations = response.data.responses[0]?.textAnnotations;
-  if (textAnnotations && textAnnotations.length > 0) {
-    return textAnnotations[0].description;
-  }
-
-  throw new Error('Không phát hiện văn bản nào trong ảnh');
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Core API (gọi backend, không gọi Google/Gemini trực tiếp nữa)
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Sử dụng Gemini AI để phân tích và trích xuất thông tin vé số từ text OCR
+ * Gửi ảnh vé số (base64) lên backend để phân tích (OCR + AI + dò vé).
+ * Backend sẽ xử lý tất cả: Google Vision → Gemini → DrawService.
  */
-export async function parseTicketData(ocrText: string): Promise<TicketData> {
-  const genResponse = await axios.post(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent',
-    {
-      contents: [
-        {
-          parts: [
-            {
-              text: `Bạn là một hệ thống trích xuất dữ liệu có cấu trúc từ văn bản OCR của vé số Việt Nam.
+export async function analyzeTicketImage(photoUri: string): Promise<AnalyzeTicketResponse> {
+  const base64 = await convertImageToBase64(photoUri);
 
-NHIỆM VỤ DUY NHẤT:
-- Phân tích văn bản OCR đầu vào
-- Trả về DUY NHẤT một object JSON hợp lệ
-
-ĐỊNH DẠNG BẮT BUỘC:
-- Chỉ được trả về JSON thuần
-- Không được giải thích
-- Không được thêm markdown
-- Không được thêm text trước hoặc sau JSON
-- Không được xuống dòng thừa
-- Không được thêm field ngoài schema
-
-SCHEMA DUY NHẤT ĐƯỢC PHÉP:
-
-{
-  "so_ve": "string | null",
-  "ngay_xo_so": "yyyy-MM-dd | null",
-  "dai_xo_so": "string | null"
-}
-
-QUY TẮC TRÍCH XUẤT:
-- Chỉ trích xuất dữ liệu nếu xuất hiện RÕ RÀNG trong OCR
-- Không suy đoán
-- Không tự sửa định dạng
-- Nếu không tìm thấy → trả về null cho field đó
-- Tên đài phải được chuẩn hoá (ví dụ: "BÌNH THUẬN" → "Bình Thuận")
-
-Văn bản OCR:
-
-${ocrText}`,
-            },
-          ],
-        },
-      ],
-      generationConfig: {
-        thinkingConfig: {
-          thinkingLevel: 'low',
-        },
-      },
-    },
+  const response = await axios.post<AnalyzeTicketResponse>(
+    `${BACKEND_URL}/api/analyze-ticket`,
+    { imageBase64: base64 },
     {
       headers: {
-        'x-goog-api-key': GEMINI_API_KEY,
+        'ngrok-skip-browser-warning': 'true',
         'Content-Type': 'application/json',
       },
+      timeout: 30000, // 30s - OCR + AI có thể chậm
     },
   );
 
-  const data = genResponse.data.candidates[0].content.parts[0].text;
-  console.log('Kết quả phân tích:', data);
-
-  return JSON.parse(data);
+  console.log('Backend analyze response:', response.data);
+  return response.data;
 }
 
 /**
- * Gửi thông tin vé số lên backend để kiểm tra kết quả
+ * Dò vé thủ công (nhập số tay).
  */
-export async function checkTicketWithBackend(ticketData: TicketData): Promise<BackendResponse> {
-  const response = await axios.post(
+export async function checkTicketManually(ticketData: TicketData): Promise<BackendCheckResponse[]> {
+  const response = await axios.post<BackendCheckResponse[]>(
     `${BACKEND_URL}/api/check-ticket`,
     {
       ticketNumber: ticketData.so_ve,
@@ -138,28 +94,10 @@ export async function checkTicketWithBackend(ticketData: TicketData): Promise<Ba
         'ngrok-skip-browser-warning': 'true',
         'Content-Type': 'application/json',
       },
+      timeout: 10000,
     },
   );
 
-  console.log('Backend response:', response.data);
+  console.log('Backend check response:', response.data);
   return response.data;
-}
-
-/**
- * Hàm chính để phân tích ảnh vé số - kết hợp tất cả các bước
- */
-export async function analyzeTicketImage(photoUri: string): Promise<BackendResponse> {
-  // Bước 1: Chuyển ảnh sang base64
-  const base64 = await convertImageToBase64(photoUri);
-
-  // Bước 2: OCR text từ ảnh
-  const ocrText = await extractTextFromImage(base64);
-
-  // Bước 3: Phân tích text để lấy thông tin vé
-  const ticketData = await parseTicketData(ocrText);
-
-  // Bước 4: Gửi lên backend để kiểm tra
-  const result = await checkTicketWithBackend(ticketData);
-
-  return result;
 }

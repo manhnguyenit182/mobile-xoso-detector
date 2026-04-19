@@ -1,53 +1,72 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Hệ thống màu sắc cho Xổ Số Detector App
+ * Phong cách: Rực rỡ, Premium, Dark Mode
+ * Palette: Gold & Deep Purple với accent đỏ/xanh neon
  */
-
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#1A0A2E',
+    background: '#F5F0FF',
+    tint: '#6B1FE8',
+    icon: '#6B1FE8',
+    tabIconDefault: '#A89BC8',
+    tabIconSelected: '#6B1FE8',
+    card: '#FFFFFF',
+    border: '#E8E0FF',
+    notification: '#FF3B5C',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#F0EAFF',
+    background: '#0D0620',
+    tint: '#C084FC',
+    icon: '#C084FC',
+    tabIconDefault: '#5B4B7B',
+    tabIconSelected: '#C084FC',
+    card: '#1C1035',
+    border: '#2D1B5E',
+    notification: '#FF3B5C',
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+/** Màu chủ đạo (dùng cho gradient, highlight) */
+export const Brand = {
+  /** Tím đậm – chủ đạo */
+  primary: '#6B1FE8',
+  /** Tím sáng – hover/active */
+  primaryLight: '#9B5DE5',
+  /** Vàng kim */
+  gold: '#FFD700',
+  /** Vàng nhạt */
+  goldLight: '#FFE87C',
+  /** Đỏ – cảnh báo / không trúng */
+  danger: '#FF3B5C',
+  /** Xanh lá – trúng giải */
+  success: '#00E5A0',
+  /** Xanh neon – accent */
+  neon: '#00D4FF',
+  /** Nền dark chính */
+  darkBg: '#0D0620',
+  /** Nền card dark */
+  darkCard: '#1C1035',
+  /** Nền card dark 2 */
+  darkCard2: '#2A1756',
+  /** Gradient chính */
+  gradientStart: '#6B1FE8',
+  gradientEnd: '#FF3B5C',
+};
+
+/** Map nhãn giải → màu */
+export const PrizeColors: Record<string, string> = {
+  'ĐẶC BIỆT': '#FFD700',
+  'GIẢI NHẤT': '#C084FC',
+  'GIẢI NHÌ': '#818CF8',
+  'GIẢI BA': '#38BDF8',
+  'GIẢI TƯ': '#34D399',
+  'GIẢI NĂM': '#A3E635',
+  'GIẢI SÁU': '#FB923C',
+  'GIẢI BẢY': '#F472B6',
+  'GIẢI TÁM': '#94A3B8',
+  'KHUYẾN KHÍCH 1': '#FCD34D',
+  'KHUYẾN KHÍCH 2': '#FDE68A',
+};
