@@ -1,105 +1,105 @@
-# 🎰 Mobile Xổ Số Detector
+<div align="center">
+  <h1>🎰 Mobile Xổ Số Detector</h1>
+  <p><i>Ứng dụng AI dò vé số đa miền thông minh, nhanh và chính xác nhất</i></p>
+  <p>
+    <b>React Native (Expo)</b> • <b>Spring Boot 3</b> • <b>PostgreSQL</b> • <b>Gemini 3.1 Flash Lite</b>
+  </p>
+</div>
 
-**Mobile Xổ Số Detector** là một ứng dụng di động thông minh giúp người dùng dò kết quả xổ số kiến thiết tự động một cách nhanh chóng và chính xác. Bằng việc kết hợp công nghệ nhận dạng hình ảnh (OCR) Google Vision và Trí tuệ nhân tạo (Gemini AI), ứng dụng cho phép người dùng chỉ cần chụp ảnh tờ vé số để biết ngay kết quả cùng số tiền trúng thưởng.
+---
 
-Ngoài ra, hệ thống cũng hỗ trợ dò vé thủ công cho cả 3 miền (Bắc, Trung, Nam) với dữ liệu được cập nhật tự động hàng ngày.
+**Mobile Xổ Số Detector** không chỉ là một công cụ tiện ích, mà là một trải nghiệm trọn vẹn dành cho người chơi xổ số kiến thiết. Bạn sẽ không bao giờ cần phải tra cứu thủ công đau mắt nữa. Chỉ với một thao tác chụp ảnh đơn giản, siêu AI của Google sẽ phân tích tờ vé số và báo kết quả ngay lập tức!
+
+Mọi thông tin về kết quả xổ số của cả 3 miền Bắc - Trung - Nam đều được hệ thống cào (crawl) tự động và liên tục mỗi chiều, đảm bảo tính cập nhật và chính xác tuyệt đối.
+
+---
+
+## 📖 Mục Lục
+- [✨ Tính Năng Nổi Bật](#-tính-năng-nổi-bật)
+- [🛠️ Kiến Trúc Công Nghệ](#️-kiến-trúc-công-nghệ)
+- [🚀 Hướng Dẫn Cài Đặt Lên Môi Trường Cục Bộ](#-hướng-dẫn-cài-đặt-lên-môi-trường-cục-bộ)
+- [📝 Hướng Dẫn Sử Dụng Siêu Tốc](#-hướng-dẫn-sử-dụng-siêu-tốc)
+- [🛡️ Cấp Độ Bảo Mật](#️-cấp-độ-bảo-mật)
 
 ---
 
 ## ✨ Tính Năng Nổi Bật
 
-- 📸 **Camera AI Scanner:** Tự động nhận diện chữ (OCR) trên tờ vé số và phân tích thông tin bằng Gemini AI.
-- 🎯 **Hỗ Trợ 3 Miền:** Thuật toán dò vé xử lý linh hoạt vé miền Bắc (5 số) và miền Trung/Nam (6 số).
-- 🏆 **Cơ Cấu Giải Thưởng Chính Xác:** Tính toán và hiển thị số tiền trúng thưởng theo đúng cơ cấu giải của từng miền.
-- 🕒 **Crawl Tự Động:** Hệ thống tự động thu thập kết quả cập nhật sớm nhất từ các đài xổ số.
-- 📜 **Lịch Sử Vé Quét:** Tích hợp bộ nhớ tạm lưu trữ và quản lý lại những tờ vé số đã kiểm tra.
-- 🎨 **Giao Diện Premium:** Trải nghiệm thiết kế Dark Mode cực xịn, cùng hiệu ứng Confetti chúc mừng khi trúng giải lớn.
+* **🔍 AI Camera Scanner:** Công nghệ OCR sắc nét từ Google Vision kết hợp với trí tuệ nhân tạo Gemini 3.1 Flash Lite mới nhất (03/2026), giúp "đọc" mọi dữ liệu nhòe, mờ trên vé số cực nhạy.
+* **🗺️ Hỗ Trợ Đa Miền Trọn Vẹn:** Tự động điều chỉnh thuật toán dựa trên loại vé (Vé miền Bắc 5 số, miền Trung/Nam 6 số) đi kèm dữ liệu cơ cấu giải thưởng chuẩn xác.
+* **⚡ Cập Nhật Tự Động (Auto Crawl):** Robot tự rà kết quả siêu tốc mỗi ngày từ 16h15 đến 18h30 tùy đài.
+* **📚 Quản Lý Vé Thông Minh:** Tab *Lịch Sử* xịn sò giúp bạn theo dõi vé nào đang chờ kết quả, vé nào đã trúng hoặc trượt, lưu trữ hoàn toàn tại thiết bị qua AsyncStorage.
+* **✨ Trải Nghiệm Premium:** Khoác lên mình giao diện Dark Mode (Tím - Vàng Kim), tích hợp Haptic (rung phản hồi) cực êm và chế độ nổ pháo hoa Confetti hoàng tráng mỗi khi vinh danh người trúng giải.
 
 ---
 
 ## 🛠️ Kiến Trúc Công Nghệ
 
-Dự án bao gồm 2 phần chính:
+Sản phẩm được thiết kế với chuẩn Microservices-like tách biệt Frontend và Backend để đảm bảo quyền riêng tư và bảo mật tuyệt đối cho Key API.
 
-### 1. Frontend (Mobile App)
-- **Framework:** React Native & Expo
-- **Giao diện:** Expo Router, StyleSheet (Dark Mode premium palette)
-- **Chức năng:** Expo Camera, Async Storage (lưu lịch sử)
-- **Kết nối:** Axios (gọi API backend)
+### 📱 **Frontend (Giao diện Mobile App)**
+- **Nền tảng:** React Native, Expo Router.
+- **Tính năng native:** Expo Camera (kèm lưới ảo), Async Storage.
+- **Thư viện UI/UX:** react-native-confetti-cannon cao cấp.
 
-### 2. Backend (Server)
-- **Framework:** Spring Boot 3.4
-- **Database:** PostgreSQL (Lưu trữ lịch sử số quay)
-- **Công nghệ lõi:**
-  - `Google Vision API` để OCR hình ảnh.
-  - `Gemini AI API` (gemini-flash) phân tích ngữ nghĩa bóc tách ngày, số vé, đài quay.
-  - `Jsoup` để cào (crawl) dữ liệu xổ số tự động.
-
+### ⚙️ **Backend (Trung tâm xử lý)**
+- **Core Server:** Spring Boot 3.4 (Java 17).
+- **Cơ sở dữ liệu:** PostgreSQL (Tự động migrate bằng Hibernate).
+- **Công nghệ nhúng:**
+  - `Google Vision API`: Nhận diện quang học OCR.
+  - `Gemini 3.1 Flash Lite API`: Phân tách chuỗi OCR phức tạp thành DTO JSON sạch.
+  - `Jsoup`: Trích xuất dữ liệu xổ số từ HTML các trang web lớn.
+  
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt
+## 🚀 Hướng Dẫn Cài Đặt Lên Môi Trường Cục Bộ
 
-### Bước 1: Sao chép dự án
+### Bước 1: Chuẩn bị mã nguồn
+Mở terminal và gõ:
 ```bash
 git clone https://github.com/manhnguyenit182/mobile-xoso-detector.git
 cd mobile-xoso-detector
 ```
 
-### Bước 2: Cài đặt Backend
-1. Di chuyển vào thư mục backend:
-   ```bash
-   cd backend
-   ```
-2. Cấu hình biến môi trường:
-   - Copy file `.env.example` thành `application.properties` (hoặc cấu hình trực tiếp biến hệ thống).
-   - Điền các thông tin API_KEY của bạn vào file.
-3. Chạy server Spring Boot:
+### Bước 2: Kích hoạt Khối Backend (Server)
+1. Truy cập vào phân hệ backend: `cd backend`
+2. Tạo file cấu hình từ bản mẫu: `cp .env.example application.properties` (Windows: `copy .env.example application.properties`)
+3. Mở file `application.properties` vừa tạo, gắn các API KEY của riêng bạn vào đó.
+4. Bật máy chủ:
    ```bash
    ./mvnw spring-boot:run
    ```
+   > Đợi đến khi Console hiển thị `Started XosoApplication in...` là Server đã thức giấc tại cổng 8080!
 
-### Bước 3: Cài đặt Frontend
-1. Mở một terminal mới, di chuyển vào thư mục frontend:
-   ```bash
-   cd frontend
-   ```
-2. Cài đặt các thư viện cần thiết:
-   ```bash
-   npm install
-   ```
-3. Cấu hình biến môi trường:
-   - Copy file `.env.example` thành `.env`.
-   - Điền đường dẫn BACKEND_URL của bạn (có thể dùng ngrok nếu bạn chạy ứng dụng trên thiết bị thật).
-4. Khởi chạy ứng dụng:
+### Bước 3: Kích hoạt Khối Frontend (Mobile App)
+1. Mở một terminal mới (không tắt terminal của server), chuyển hướng: `cd frontend`
+2. Cài toàn bộ các gói thư viện Node: `npm install`
+3. Đổi cấu hình môi trường: `cp .env.example .env` (Lưu ý: Bạn bắt buộc phải vào file `.env` chỉnh biến `EXPO_PUBLIC_BACKEND_URL` trỏ về IP Wifi của máy tính, vd: `http://192.168.1.5:8080` hoặc nếu dùng ngrok thì dán link ngrok vào đây).
+4. Khởi động nhà máy Expo:
    ```bash
    npm start
    ```
-5. Dùng ứng dụng Expo Go trên điện thoại để quét mã QR và trải nghiệm.
+5. Tải app **Expo Go** trên điện thoại, quét mã QR khổng lồ vừa hiện ra trên Terminal để tận hưởng thành quả!
 
 ---
 
-## 📝 Hướng Dẫn Sử Dụng
+## 📝 Hướng Dẫn Sử Dụng Siêu Tốc
 
-1. **Quét Vé Số Đoán Thưởng Thần Tốc:**
-   - Tại màn hình chính, chọn qua **Quét Vé**.
-   - Hướng camera vào tờ vé số, sao cho vừa vặn khung nhận diện.
-   - Bấm vào nút chụp. AI sẽ lo phần còn lại và trả cho bạn số tiền trúng thưởng kèm hiệu ứng nếu may mắn!
-
-2. **Dò Vé Thủ Công Chính Xác:**
-   - Chuyển qua tab **Dò Tay**.
-   - Lựa chọn Miền Bắc/Trung/Nam.
-   - Nhập thông tin: Ngày xổ số, Tên Đài, Số Vé (5 số cho MB, 6 số cho MN/MT).
-   - Chọn "Tìm Kiếm" và nhận kết quả tức thì.
-
-3. **Xem Lại Lịch Sử Vé Số Đã Mua:**
-   - Bấm vào tab **Lịch Sử**.
-   - Ứng dụng sẽ lưu lại rảnh rỗi chờ ngày rinh tài lộc. Bạn cũng có thể lọc theo từng trạng thái (Trúng, Trượt...).
+* **Dò vé bằng mắt thần (Camera):** Nhấp sang tab **📸 Quét Vé**, cấp quyền cho máy ảnh. Đưa vé số vừa khít khung đo Vàng Kim và ấn nhẹ nút chụp. 2 giây sau kết quả và tiền thưởng sẽ hiện ra!
+* **Dò vé kiểu dân gian (Thủ công):** Nhấp sang tab **🔍 Dò Tay**. Hệ thống trang bị sẵn "Chip 3 cực" để bạn chọn đài (Bắc-Trung-Nam) và tự lo liệu số lượng chữ số tối đa.
+* **Kiểm kê tài sản (Lịch sử):** Sang tab **📜 Lịch Sử**, bạn sẽ thấy danh sách vé mình từng rà. Vé đã trúng sẽ highlight màu Vàng, vé tạch màu Xám, vé chưa sổ sẽ nảy màu Neon mòn gót đợi chờ.
 
 ---
 
-## 🛡️ Bảo Mật
-Dự án được bảo vệ an toàn bằng cách ẩn toàn bộ API Key (Google Vision & Gemini) dưới Backend. Tuyệt đối **KHÔNG** đưa bất kì key nhạy cảm nào vào Frontend. 
-Đảm bảo bạn không commit các file `.env` chứa API thật lên GitHub!
+## 🛡️ Cấp Độ Bảo Mật
+
+* **Sạch sẽ ở Frontend:** Bạn sẽ không bao giờ tìm thấy các khóa bảo mật (Google Vision, Gemini Key, DB Password) bị tuồn vào Frontend. 
+* **Tất cả ở Backend:** Mọi chìa khóa tài sản đều được giấu khép kín bên trong lớp Backend Java bảo mật. 
+
+> ⚠️ **LƯU Ý NGHIÊM NGẶT:** Tuyệt đối không commit (đẩy code lên rạp) các file `application.properties` hoặc `.env` chứa API Key thật của bạn lên GitHub!
 
 ---
-*Chúc bạn có những trải nghiệm tuyệt vời và trúng Vietlott/Kiến thiết dài dài với Mobile Xổ Số Detector! 🍀*
+
+<div align="center">
+  <i>Được xây dựng với 💖 và nỗ lực mang thần tài đến mọi nhà. Chúc may mắn! 🍀</i>
+</div>
