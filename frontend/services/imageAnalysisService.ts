@@ -1,9 +1,9 @@
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system/legacy';
 
-const API_KEY = 'AIzaSyDPCzqZQZtz3nQn-RSiLGNdhuZIEkREB90';
-const GEMINI_API_KEY = 'AIzaSyDPQWUa9c_cANL9fpNb4YxP0dOLBzzCUTk';
-const BACKEND_URL = 'https://unmanually-egestive-viki.ngrok-free.dev';
+const API_KEY = process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY;
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://unmanually-egestive-viki.ngrok-free.dev';
 
 export interface TicketData {
   so_ve: string | null;
