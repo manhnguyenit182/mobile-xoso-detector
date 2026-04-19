@@ -1,8 +1,13 @@
 <div align="center">
   <h1>🎰 Mobile Xổ Số Detector</h1>
   <p><i>Ứng dụng AI dò vé số đa miền thông minh, nhanh và chính xác nhất</i></p>
-  <p>
-    <b>React Native (Expo)</b> • <b>Spring Boot 3</b> • <b>PostgreSQL</b> • <b>Gemini 3.1 Flash Lite</b>
+  
+  <p align="center">
+    <img src="https://img.shields.io/badge/Spring_Boot-3.4-brightgreen?style=for-the-badge&logo=springboot" alt="Spring Boot">
+    <img src="https://img.shields.io/badge/React_Native-Expo-blue?style=for-the-badge&logo=react" alt="React Native">
+    <img src="https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
+    <img src="https://img.shields.io/badge/PostgreSQL-latest-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL">
+    <img src="https://img.shields.io/badge/Gemini_AI-Flash_3.1--Lite-orange?style=for-the-badge&logo=google-gemini" alt="Gemini AI">
   </p>
 </div>
 
