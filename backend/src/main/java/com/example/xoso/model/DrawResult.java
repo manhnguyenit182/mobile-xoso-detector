@@ -8,9 +8,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.*;
 
 @Entity
+@Table(name = "draw_result", indexes = {
+    @Index(name = "ix_draw_province_date", columnList = "provinceCode, drawDate"),
+    @Index(name = "ix_draw_region_date", columnList = "region, drawDate")
+})
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,6 +29,13 @@ public class DrawResult {
   @Column(nullable = false)
   private String provinceCode;
 
+  /**
+   * Miền: MN = Miền Nam, MT = Miền Trung, MB = Miền Bắc
+   */
+  @Column(nullable = false, length = 2)
+  @Builder.Default
+  private String region = "MN";
+
   @Column(nullable = false)
   private LocalDate drawDate;
 
@@ -30,10 +43,11 @@ public class DrawResult {
   private String prizeLevel;
 
   @Column(nullable = false, columnDefinition = "TEXT")
-  private String numbers; // lưu JSON string
+  private String numbers; // lưu danh sách số phân cách bằng dấu phẩy
 
   private String sourceUrl;
 
   @Builder.Default
   private Instant fetchedAt = Instant.now();
 }
+

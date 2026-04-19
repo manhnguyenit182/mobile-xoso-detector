@@ -14,10 +14,11 @@ public class WebConfig {
       @Override
       public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-            .allowedOrigins("http://localhost:3000", "http://localhost:5173")
+            // Cho phép mọi origin (bao gồm Expo dev, ngrok, và app mobile)
+            .allowedOriginPatterns("*")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
-            .allowCredentials(true)
+            // Không set allowCredentials=true khi dùng allowedOriginPatterns("*")
             .maxAge(3600);
       }
     };
