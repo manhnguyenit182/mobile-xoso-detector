@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { analyzeTicketImage, AnalyzeTicketResponse } from '../../services/imageAnalysisService';
 import { saveTicketToHistory, formatPrizeAmount } from '../../services/ticketHistoryService';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { Brand, PrizeColors } from '../../constants/theme';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
@@ -37,12 +38,14 @@ function ResultScreen({
   const totalPrize = (result.prizes ?? []).reduce((s, p) => s + p.prizeAmount, 0);
 
   return (
-    <ScrollView style={rs.container} contentContainerStyle={rs.content} bounces={false}>
-      {/* Header */}
-      <View style={[rs.header, { backgroundColor: hasWon ? Brand.gold : Brand.danger }]}>
-        <Text style={rs.emoji}>{hasWon ? '🎉' : result.errorMessage ? '⚠️' : '😔'}</Text>
-        <Text style={rs.headerTitle}>
-          {hasWon ? 'CHÚC MỪNG!' : result.errorMessage ? 'LỖI NHẬN DẠNG' : 'KHÔNG TRÚNG'}
+    <View style={{ flex: 1 }}>
+      <ScrollView style={rs.container} contentContainerStyle={rs.content} bounces={false}>
+        {/* Header */}
+        <View style={[rs.header, { backgroundColor: hasWon ? Brand.gold : Brand.danger }]}>
+          <Text style={rs.emoji}>{hasWon ? '🎉' : result.errorMessage ? '⚠️' : '😔'}</Text>
+          <Text style={rs.headerTitle}>
+            {hasWon ? 'CHÚC MỪNG!' : result.errorMessage ? 'LỖI NHẬN DẠNG' : 'KHÔNG TRÚNG'}
+
         </Text>
         {hasWon && (
           <Text style={rs.totalPrize}>Tổng thưởng: {formatPrizeAmount(totalPrize)}</Text>
@@ -88,7 +91,17 @@ function ResultScreen({
           <Text style={rs.retakeBtnText}>📷 Quét Vé Khác</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+      </ScrollView>
+      {hasWon && (
+        <ConfettiCannon
+          count={200}
+          origin={{ x: SCREEN_W / 2, y: -20 }}
+          autoStart={true}
+          fadeOut={true}
+          fallSpeed={3000}
+        />
+      )}
+    </View>
   );
 }
 

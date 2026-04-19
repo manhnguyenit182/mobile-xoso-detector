@@ -13,8 +13,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Dimensions } from 'react-native';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { checkTicketManually } from '../../services/imageAnalysisService';
+
+const { width: SCREEN_W } = Dimensions.get('window');
 import { formatPrizeAmount } from '../../services/ticketHistoryService';
 import { Brand, PrizeColors } from '../../constants/theme';
 
@@ -114,8 +118,9 @@ export default function ManualCheckScreen() {
   const totalPrize = (prizes ?? []).reduce((s: number, p: any) => s + (p.prizeAmount ?? 0), 0);
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-      <StatusBar barStyle="light-content" backgroundColor={Brand.darkBg} />
+    <View style={{ flex: 1 }}>
+      <ScrollView style={s.container} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+        <StatusBar barStyle="light-content" backgroundColor={Brand.darkBg} />
 
       {/* Header */}
       <View style={s.header}>
@@ -248,7 +253,19 @@ export default function ManualCheckScreen() {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+      </ScrollView>
+
+      {/* Confetti */}
+      {hasWon && (
+        <ConfettiCannon
+          count={200}
+          origin={{ x: SCREEN_W / 2, y: -20 }}
+          autoStart={true}
+          fadeOut={true}
+          fallSpeed={3000}
+        />
+      )}
+    </View>
   );
 }
 
