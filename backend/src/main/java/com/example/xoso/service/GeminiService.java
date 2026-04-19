@@ -26,7 +26,7 @@ public class GeminiService {
   private String geminiApiKey;
 
   private static final String GEMINI_URL =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
+      "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent";
 
   private final HttpClient httpClient = HttpClient.newBuilder()
       .connectTimeout(Duration.ofSeconds(10))
@@ -82,11 +82,11 @@ public class GeminiService {
     root.set("contents", contents);
 
     // Cấu hình thinkingLevel để nhanh hơn
-    ObjectNode genConfig = mapper.createObjectNode();
-    ObjectNode thinkingConfig = mapper.createObjectNode();
-    thinkingConfig.put("thinkingBudget", 0); // disable thinking để phản hồi nhanh
-    genConfig.set("thinkingConfig", thinkingConfig);
-    root.set("generationConfig", genConfig);
+    // ObjectNode genConfig = mapper.createObjectNode();
+    // ObjectNode thinkingConfig = mapper.createObjectNode();
+    // thinkingConfig.put("thinkingBudget", 0); // disable thinking để phản hồi nhanh
+    // genConfig.set("thinkingConfig", thinkingConfig);
+    // root.set("generationConfig", genConfig);
 
     String requestBody = mapper.writeValueAsString(root);
 
