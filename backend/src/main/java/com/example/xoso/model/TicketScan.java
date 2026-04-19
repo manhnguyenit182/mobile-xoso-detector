@@ -31,7 +31,7 @@ public class TicketScan {
   private String ocrText;
 
   @Column(nullable = false)
-  private int recognizedNumber;
+  private String recognizedNumber;
 
   @Column(nullable = false)
   private String provinceCode;

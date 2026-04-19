@@ -32,7 +32,7 @@ public class DrawResult {
   /**
    * Miền: MN = Miền Nam, MT = Miền Trung, MB = Miền Bắc
    */
-  @Column(nullable = false, length = 2)
+  @Column(length = 2)
   @Builder.Default
   private String region = "MN";
 
