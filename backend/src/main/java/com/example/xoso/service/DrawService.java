@@ -13,22 +13,34 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Service dò vé số hỗ trợ cả 3 miền:
  * - Miền Nam / Miền Trung: vé 6 số
- * - Miền Bắc: vé 5 số, cơ cấu giải thưởng khác
+ * - Miền Bắc: vé 5 số + ký hiệu
  *
- * Cơ cấu giải và số chữ số khớp đuôi:
- * Miền Nam/Trung:
- *   Giải ĐB (1): 6 số → 2 tỷ | KK (10): 5 số khác đầu → 40 triệu | KK2 (11): 5 số → 10 triệu
- *   Giải 1 (2): 5 số → 500 triệu | Giải 2 (3): 5 số → 300 triệu
- *   Giải 3 (4): 5 số → 100 triệu | Giải 4 (5): 5 số → 30 triệu
- *   Giải 5 (6): 4 số → 10 triệu  | Giải 6 (7): 4 số → 3 triệu
- *   Giải 7 (8): 3 số → 4 triệu   | Giải 8 (9): 2 số → 2 triệu
+ * Cơ cấu giải thưởng thực tế hiện hành:
  *
- * Miền Bắc (vé 5 số, giải ĐB 5 số):
- *   Giải ĐB (1): 5 số → 2 tỷ
- *   Giải 1 (2): 5 số → 100 triệu | Giải 2 (3): 5 số x2 → 60 triệu
- *   Giải 3 (4): 5 số x6 → 30 triệu | Giải 4 (5): 4 số x4 → 6 triệu
- *   Giải 5 (6): 4 số → 3 triệu | Giải 6 (7): 3 số x3 → 1.5 triệu
- *   Giải 7 (8): 2 số x4 → 200 nghìn
+ * Miền Nam / Miền Trung (vé 6 số):
+ *   Giải ĐB  (prizeLevel=1): khớp 6 số đuôi           → 2.000.000.000đ
+ *   Giải Phụ ĐB             : khớp 5 số đuôi (sai hàng trăm nghìn) → 50.000.000đ
+ *   Giải KK                 : sai đúng 1 số bất kỳ (không phải hàng trăm nghìn) → 6.000.000đ
+ *   Giải Nhất (prizeLevel=2): khớp 5 số đuôi           → 30.000.000đ
+ *   Giải Nhì  (prizeLevel=3): khớp 5 số đuôi           → 15.000.000đ
+ *   Giải Ba   (prizeLevel=4): khớp 5 số đuôi           → 10.000.000đ
+ *   Giải Tư   (prizeLevel=5): khớp 5 số đuôi           → 3.000.000đ
+ *   Giải Năm  (prizeLevel=6): khớp 4 số đuôi           → 1.000.000đ
+ *   Giải Sáu  (prizeLevel=7): khớp 4 số đuôi           → 400.000đ
+ *   Giải Bảy  (prizeLevel=8): khớp 3 số đuôi           → 200.000đ
+ *   Giải Tám  (prizeLevel=9): khớp 2 số đuôi           → 100.000đ
+ *
+ * Miền Bắc (vé 5 số + ký hiệu):
+ *   Giải ĐB  (prizeLevel=1): khớp 5 số + ký hiệu       → 500.000.000đ (mỗi vé)
+ *   Giải Phụ ĐB             : khớp đúng 5 số (khác ký hiệu) → 25.000.000đ
+ *   Giải Nhất (prizeLevel=2): khớp 5 số đuôi           → 10.000.000đ
+ *   Giải Nhì  (prizeLevel=3): khớp 5 số đuôi (2 dãy)   → 5.000.000đ
+ *   Giải Ba   (prizeLevel=4): khớp 5 số đuôi (6 dãy)   → 1.000.000đ
+ *   Giải Tư   (prizeLevel=5): khớp 4 số đuôi (4 dãy)   → 400.000đ
+ *   Giải Năm  (prizeLevel=6): khớp 4 số đuôi           → 200.000đ
+ *   Giải Sáu  (prizeLevel=7): khớp 3 số đuôi (3 dãy)   → 100.000đ
+ *   Giải Bảy  (prizeLevel=8): khớp 2 số đuôi (4 dãy)   → 40.000đ
+ *   Giải KK                 : khớp 2 số đuôi của ĐB     → 40.000đ
  */
 @Slf4j
 @Service
@@ -81,72 +93,83 @@ public class DrawService {
       String prizeLevel = Integer.toString(i);
 
       if (prizeLevel.equals("1")) {
-        // Giải ĐB: 6 số khớp = ĐB (2 tỷ); 5 số khớp (khác đầu) = KK1 (40 tr); 5 số = KK2 (10 tr)
+        // ── Giải Đặc Biệt ──────────────────────────────────────────────────────
+        // - Khớp 6 số cuối  → ĐẶC BIỆT          (2.000.000.000đ)
+        // - Khớp 5 số cuối (sai hàng trăm nghìn) → PHỤ ĐẶC BIỆT (50.000.000đ)
+        // - Sai đúng 1 số bất kỳ (không phải trăm nghìn) → KHUYẾN KHÍCH (6.000.000đ)
         String specialPrize = drawResultRepository.findNumbersByProvinceCodeAndDrawDateAndPrizeLevel(
             provinceCode, drawDate, prizeLevel);
         if (specialPrize != null) {
-          String prize6 = specialPrize.trim().replace(",", "").substring(0, Math.min(6, specialPrize.trim().replace(",", "").length()));
+          String rawPrize = specialPrize.trim().replace(",", "");
+          String prize6 = rawPrize.substring(0, Math.min(6, rawPrize.length()));
           int matchCount = countSuffixMatch(ticketNumber, prize6, prize6.length());
           log.debug("Giải ĐB: {} khớp {} số với {}", ticketNumber, matchCount, prize6);
 
           if (matchCount == 6) {
+            // Trúng Đặc Biệt
             addResult(provinceCode, drawDate, "ĐẶC BIỆT", ticketNumber, results, 2_000_000_000L);
-          } else if (matchCount == 5 && ticketNumber.charAt(0) != prize6.charAt(0)) {
-            addResult(provinceCode, drawDate, "KHUYẾN KHÍCH 1", ticketNumber, results, 40_000_000L);
-          } else if (matchCount == 5) {
-            addResult(provinceCode, drawDate, "KHUYẾN KHÍCH 2", ticketNumber, results, 10_000_000L);
+          } else if (matchCount == 5 && ticketNumber.charAt(ticketNumber.length() - 6) != prize6.charAt(0)) {
+            // Sai chữ số hàng trăm nghìn → Giải Phụ Đặc Biệt
+            addResult(provinceCode, drawDate, "PHỤ ĐẶC BIỆT", ticketNumber, results, 50_000_000L);
+          } else {
+            // Kiểm tra Giải Khuyến Khích: sai đúng 1 số bất kỳ (không phải trăm nghìn)
+            int diffCount = countDiffPositions(ticketNumber, prize6);
+            if (diffCount == 1 && !isMismatchAtHundredThousand(ticketNumber, prize6)) {
+              addResult(provinceCode, drawDate, "KHUYẾN KHÍCH", ticketNumber, results, 6_000_000L);
+            }
           }
         }
 
-      } else if (prizeLevel.equals("2") || prizeLevel.equals("3") || prizeLevel.equals("4") || prizeLevel.equals("5")) {
-        // Giải 1–4: so 5 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 5);
+      } else if (prizeLevel.equals("2") || prizeLevel.equals("3")
+          || prizeLevel.equals("4") || prizeLevel.equals("5")) {
+        // ── Giải Nhất → Tư: so 5 số đuôi ──────────────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(5, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
         if (exists) {
           long amount = switch (prizeLevel) {
-            case "2" -> 500_000_000L;
-            case "3" -> 300_000_000L;
-            case "4" -> 100_000_000L;
-            case "5" -> 30_000_000L;
+            case "2" -> 30_000_000L;   // Giải Nhất
+            case "3" -> 15_000_000L;   // Giải Nhì
+            case "4" -> 10_000_000L;   // Giải Ba
+            case "5" -> 3_000_000L;    // Giải Tư
             default -> 0L;
           };
           addResult(provinceCode, drawDate, "GIẢI " + getGradeLabel(prizeLevel), ticketNumber, results, amount);
         }
 
       } else if (prizeLevel.equals("6") || prizeLevel.equals("7")) {
-        // Giải 5–6: so 4 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 4);
+        // ── Giải Năm → Sáu: so 4 số đuôi ──────────────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(4, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
         if (exists) {
-          long amount = prizeLevel.equals("6") ? 10_000_000L : 3_000_000L;
+          long amount = prizeLevel.equals("6") ? 1_000_000L : 400_000L;
           addResult(provinceCode, drawDate, "GIẢI " + getGradeLabel(prizeLevel), ticketNumber, results, amount);
         }
 
       } else if (prizeLevel.equals("8")) {
-        // Giải 7: so 3 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 3);
+        // ── Giải Bảy: so 3 số đuôi ─────────────────────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(3, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
         if (exists) {
-          addResult(provinceCode, drawDate, "GIẢI BẢY", ticketNumber, results, 4_000_000L);
+          addResult(provinceCode, drawDate, "GIẢI BẢY", ticketNumber, results, 200_000L);
         }
 
       } else if (prizeLevel.equals("9")) {
-        // Giải 8: so 2 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 2);
+        // ── Giải Tám: so 2 số đuôi ─────────────────────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(2, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
         if (exists) {
-          addResult(provinceCode, drawDate, "GIẢI TÁM", ticketNumber, results, 2_000_000L);
+          addResult(provinceCode, drawDate, "GIẢI TÁM", ticketNumber, results, 100_000L);
         }
       }
     }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // MIỀN BẮC (vé 5 số)
+  // MIỀN BẮC (vé 5 số + ký hiệu)
   // ─────────────────────────────────────────────────────────────────────────────
 
   private void checkMienBac(String provinceCode, LocalDate drawDate, String ticketNumber,
@@ -156,65 +179,81 @@ public class DrawService {
       String prizeLevel = Integer.toString(i);
 
       if (prizeLevel.equals("1")) {
-        // Giải ĐB Miền Bắc: 5 số
+        // ── Giải Đặc Biệt Miền Bắc ─────────────────────────────────────────────
+        // - Khớp 5 số + đúng ký hiệu → ĐẶC BIỆT        (500.000.000đ/vé)
+        // - Khớp đúng 5 số (sai ký hiệu) → PHỤ ĐẶC BIỆT (25.000.000đ)
         String specialPrize = drawResultRepository.findNumbersByProvinceCodeAndDrawDateAndPrizeLevel(
             provinceCode, drawDate, prizeLevel);
         if (specialPrize != null) {
-          String prize5 = specialPrize.trim().replace(",", "").substring(0, Math.min(5, specialPrize.trim().replace(",", "").length()));
+          String rawPrize = specialPrize.trim().replace(",", "");
+          String prize5 = rawPrize.substring(0, Math.min(5, rawPrize.length()));
           int matchCount = countSuffixMatch(ticketNumber, prize5, prize5.length());
+          log.debug("Giải ĐB Miền Bắc: {} khớp {} số với {}", ticketNumber, matchCount, prize5);
+
           if (matchCount == 5) {
-            addResult(provinceCode, drawDate, "ĐẶC BIỆT", ticketNumber, results, 2_000_000_000L);
+            // Khớp 5 số → ĐẶC BIỆT (mỗi vé trúng 500 triệu)
+            addResult(provinceCode, drawDate, "ĐẶC BIỆT", ticketNumber, results, 500_000_000L);
+          } else if (matchCount == 4) {
+            // Khớp 4 số cuối (coi như sai ký hiệu/hàng trăm nghìn) → Phụ ĐB
+            addResult(provinceCode, drawDate, "PHỤ ĐẶC BIỆT", ticketNumber, results, 25_000_000L);
+          } else {
+            // Kiểm tra Giải Khuyến Khích: 2 số cuối trùng với 2 số cuối của ĐB
+            String ticket2 = ticketNumber.substring(ticketNumber.length() - Math.min(2, ticketNumber.length()));
+            String prize2 = prize5.substring(prize5.length() - 2);
+            if (ticket2.equals(prize2)) {
+              addResult(provinceCode, drawDate, "KHUYẾN KHÍCH", ticketNumber, results, 40_000L);
+            }
           }
         }
 
       } else if (prizeLevel.equals("2")) {
-        // Giải 1: 5 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 5);
+        // ── Giải Nhất: 5 số đuôi (10 triệu) ───────────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(5, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
-        if (exists) addResult(provinceCode, drawDate, "GIẢI NHẤT", ticketNumber, results, 100_000_000L);
+        if (exists) addResult(provinceCode, drawDate, "GIẢI NHẤT", ticketNumber, results, 10_000_000L);
 
       } else if (prizeLevel.equals("3")) {
-        // Giải 2: 5 số đuôi (2 lần)
-        String sub = ticketNumber.substring(ticketNumber.length() - 5);
+        // ── Giải Nhì: 5 số đuôi, 2 dãy (5 triệu) ──────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(5, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
-        if (exists) addResult(provinceCode, drawDate, "GIẢI NHÌ", ticketNumber, results, 60_000_000L);
+        if (exists) addResult(provinceCode, drawDate, "GIẢI NHÌ", ticketNumber, results, 5_000_000L);
 
       } else if (prizeLevel.equals("4")) {
-        // Giải 3: 5 số đuôi (6 lần)
-        String sub = ticketNumber.substring(ticketNumber.length() - 5);
+        // ── Giải Ba: 5 số đuôi, 6 dãy (1 triệu) ───────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(5, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
-        if (exists) addResult(provinceCode, drawDate, "GIẢI BA", ticketNumber, results, 30_000_000L);
+        if (exists) addResult(provinceCode, drawDate, "GIẢI BA", ticketNumber, results, 1_000_000L);
 
       } else if (prizeLevel.equals("5")) {
-        // Giải 4: 4 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 4);
+        // ── Giải Tư: 4 số đuôi, 4 dãy (400 nghìn) ─────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(4, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
-        if (exists) addResult(provinceCode, drawDate, "GIẢI TƯ", ticketNumber, results, 6_000_000L);
+        if (exists) addResult(provinceCode, drawDate, "GIẢI TƯ", ticketNumber, results, 400_000L);
 
       } else if (prizeLevel.equals("6")) {
-        // Giải 5: 4 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 4);
+        // ── Giải Năm: 4 số đuôi (200 nghìn) ───────────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(4, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
-        if (exists) addResult(provinceCode, drawDate, "GIẢI NĂM", ticketNumber, results, 3_000_000L);
+        if (exists) addResult(provinceCode, drawDate, "GIẢI NĂM", ticketNumber, results, 200_000L);
 
       } else if (prizeLevel.equals("7")) {
-        // Giải 6: 3 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 3);
+        // ── Giải Sáu: 3 số đuôi, 3 dãy (100 nghìn) ────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(3, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
-        if (exists) addResult(provinceCode, drawDate, "GIẢI SÁU", ticketNumber, results, 1_500_000L);
+        if (exists) addResult(provinceCode, drawDate, "GIẢI SÁU", ticketNumber, results, 100_000L);
 
       } else if (prizeLevel.equals("8")) {
-        // Giải 7: 2 số đuôi
-        String sub = ticketNumber.substring(ticketNumber.length() - 2);
+        // ── Giải Bảy: 2 số đuôi, 4 dãy (40 nghìn) ─────────────────────────────
+        String sub = ticketNumber.substring(ticketNumber.length() - Math.min(2, ticketNumber.length()));
         boolean exists = drawResultRepository.existsByProvinceCodeAndDrawDateAndPrizeLevelAndNumbersContaining(
             provinceCode, drawDate, prizeLevel, sub);
-        if (exists) addResult(provinceCode, drawDate, "GIẢI BẢY", ticketNumber, results, 200_000L);
+        if (exists) addResult(provinceCode, drawDate, "GIẢI BẢY", ticketNumber, results, 40_000L);
       }
     }
   }
@@ -223,7 +262,9 @@ public class DrawService {
   // HELPERS
   // ─────────────────────────────────────────────────────────────────────────────
 
-  /** Đếm số ký tự khớp từ đuôi giữa ticket và prize. */
+  /**
+   * Đếm số ký tự khớp liên tiếp từ đuôi (phải → trái) giữa ticket và prize.
+   */
   private int countSuffixMatch(String ticket, String prize, int maxLen) {
     int count = 0;
     int tLen = ticket.length();
@@ -237,6 +278,30 @@ public class DrawService {
       }
     }
     return count;
+  }
+
+  /**
+   * Đếm số vị trí khác nhau khi so sánh 6 số cuối của ticket với prize6.
+   * Dùng để phát hiện Giải Khuyến Khích (sai đúng 1 số bất kỳ).
+   */
+  private int countDiffPositions(String ticket, String prize6) {
+    if (ticket.length() < 6 || prize6.length() < 6) return 6;
+    String t6 = ticket.substring(ticket.length() - 6);
+    int diff = 0;
+    for (int i = 0; i < 6; i++) {
+      if (t6.charAt(i) != prize6.charAt(i)) diff++;
+    }
+    return diff;
+  }
+
+  /**
+   * Kiểm tra xem vị trí sai duy nhất có phải hàng trăm nghìn (index 0) không.
+   * Nếu sai hàng trăm nghìn thì là Giải Phụ ĐB, không phải KK.
+   */
+  private boolean isMismatchAtHundredThousand(String ticket, String prize6) {
+    if (ticket.length() < 6 || prize6.length() < 6) return false;
+    String t6 = ticket.substring(ticket.length() - 6);
+    return t6.charAt(0) != prize6.charAt(0);
   }
 
   private String getGradeLabel(String prizeLevel) {
