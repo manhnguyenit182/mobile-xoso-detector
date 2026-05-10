@@ -69,6 +69,9 @@ public class CrawlScheduler {
     crawlRegion("MB", urlMienBac);
   }
 
+  @Autowired
+  private GetXoSo getXoSo;
+
   // ─────────────────────────────────────────────────────────────────────────────
   // CORE CRAWL LOGIC (shared)
   // ─────────────────────────────────────────────────────────────────────────────
@@ -81,17 +84,12 @@ public class CrawlScheduler {
     }
 
     log.info("[{}] Bắt đầu crawl dữ liệu từ: {}", region, url);
-    GetXoSo getXoSo = new GetXoSo();
     try {
-      String jsonData = getXoSo.fetchData(url);
-      if (jsonData == null) {
+      Map<String, Map<String, List<String>>> dataMap = getXoSo.fetchData(url);
+      if (dataMap == null) {
         log.info("[{}] Dữ liệu chưa có.", region);
         return;
       }
-
-      ObjectMapper mapper = new ObjectMapper();
-      Map<String, Map<String, List<String>>> dataMap = mapper.readValue(jsonData,
-          new TypeReference<Map<String, Map<String, List<String>>>>() {});
 
       Map<String, Map<String, List<String>>> cached = lastFetchedData.get(region);
       if (dataMap.equals(cached)) {

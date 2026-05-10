@@ -13,17 +13,18 @@ public class HtmlController {
   private final GetXoSo jsoupService;
 
   @GetMapping("/view-kqxs")
-  public ResponseEntity<String> viewKqxs() {
+  public ResponseEntity<Object> viewKqxs() {
     try {
-      String jsondata = jsoupService.fetchData("https://www.kqxs.vn/mien-bac");
-      System.out.println("Fetched JSON data: " + jsondata.length() + " characters");
+      java.util.Map<String, java.util.Map<String, java.util.List<String>>> jsondata = jsoupService.fetchData("https://www.kqxs.vn/mien-bac");
+      if (jsondata == null) {
+          return ResponseEntity.ok().body("Chưa có kết quả mới.");
+      }
       return ResponseEntity.ok()
           .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE +
               ";charset=UTF-8")
           .body(jsondata);
     } catch (Exception e) {
-      return ResponseEntity.status(500).body("<h1>Lỗi tải HTML</h1><pre>" +
-          e.getMessage() + "</pre>");
+      return ResponseEntity.status(500).body("Lỗi tải HTML: " + e.getMessage());
     }
   }
 }
