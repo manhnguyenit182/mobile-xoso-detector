@@ -71,8 +71,14 @@ public class TicketAnalysisService {
           .prizes(prizes)
           .build();
 
+    } catch (com.example.xoso.exception.BaseXosoException e) {
+      log.error("Lỗi nghiệp vụ khi phân tích vé số: {}", e.getMessage(), e);
+      return AnalyzeTicketResponse.builder()
+          .resultsAvailable(false)
+          .errorMessage(e.getMessage())
+          .build();
     } catch (Exception e) {
-      log.error("Lỗi khi phân tích vé số: {}", e.getMessage(), e);
+      log.error("Lỗi hệ thống khi phân tích vé số: {}", e.getMessage(), e);
       return AnalyzeTicketResponse.builder()
           .resultsAvailable(false)
           .errorMessage("Lỗi hệ thống: " + e.getMessage())

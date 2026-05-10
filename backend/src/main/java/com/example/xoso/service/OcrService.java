@@ -24,7 +24,9 @@ public class OcrService {
   @Value("${google.vision.api.key}")
   private String googleVisionApiKey;
 
-  private static final String VISION_URL = "https://vision.googleapis.com/v1/images:annotate";
+  @Value("${google.vision.api.url}")
+  private String googleVisionApiUrl;
+
   private final HttpClient httpClient = HttpClient.newBuilder()
       .connectTimeout(Duration.ofSeconds(10))
       .build();
@@ -36,8 +38,8 @@ public class OcrService {
    * @param base64Image chuỗi base64 của ảnh (không kèm data:image/... prefix)
    * @return raw OCR text
    */
-  public String extractText(String base64Image) throws Exception {
-    String url = VISION_URL + "?key=" + googleVisionApiKey;
+  public String extractText(String base64Image) {
+    String url = googleVisionApiUrl + "?key=" + googleVisionApiKey;
 
     // Build request body
     ObjectNode root = mapper.createObjectNode();
@@ -58,7 +60,12 @@ public class OcrService {
     requests.add(reqNode);
     root.set("requests", requests);
 
-    String requestBody = mapper.writeValueAsString(root);
+    String requestBody;
+    try {
+      requestBody = mapper.writeValueAsString(root);
+    } catch (Exception e) {
+      throw new com.example.xoso.exception.TicketAnalysisException("Lỗi build request body cho Google Vision", e);
+    }
 
     HttpRequest httpRequest = HttpRequest.newBuilder()
         .uri(URI.create(url))
@@ -67,17 +74,28 @@ public class OcrService {
         .timeout(Duration.ofSeconds(15))
         .build();
 
-    HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-    if (response.statusCode() != 200) {
-      throw new RuntimeException("Google Vision API lỗi: HTTP " + response.statusCode() + " - " + response.body());
+    HttpResponse<String> response;
+    try {
+      response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+    } catch (Exception e) {
+      throw new com.example.xoso.exception.CrawlDataException("Lỗi kết nối Google Vision API", e);
     }
 
-    JsonNode responseJson = mapper.readTree(response.body());
+    if (response.statusCode() != 200) {
+      throw new com.example.xoso.exception.TicketAnalysisException("Google Vision API lỗi: HTTP " + response.statusCode() + " - " + response.body());
+    }
+
+    JsonNode responseJson;
+    try {
+      responseJson = mapper.readTree(response.body());
+    } catch (Exception e) {
+      throw new com.example.xoso.exception.TicketAnalysisException("Lỗi parse JSON từ Google Vision API", e);
+    }
+
     JsonNode textAnnotations = responseJson.path("responses").get(0).path("textAnnotations");
 
     if (textAnnotations == null || textAnnotations.isEmpty()) {
-      throw new RuntimeException("Không phát hiện văn bản nào trong ảnh");
+      throw new com.example.xoso.exception.TicketAnalysisException("Không phát hiện văn bản nào trong ảnh");
     }
 
     return textAnnotations.get(0).path("description").asText();

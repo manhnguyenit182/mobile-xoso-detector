@@ -31,6 +31,27 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
   }
 
+  @ExceptionHandler(BaseXosoException.class)
+  public ResponseEntity<ErrorResponse> handleBaseXosoException(
+      BaseXosoException ex,
+      WebRequest request) {
+
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    if (ex instanceof CrawlDataException) {
+        status = HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+
+    ErrorResponse errorResponse = ErrorResponse.builder()
+        .timestamp(LocalDateTime.now())
+        .status(status.value())
+        .error(status.getReasonPhrase())
+        .message(ex.getMessage())
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
+
+    return new ResponseEntity<>(errorResponse, status);
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, Object>> handleValidationExceptions(
       MethodArgumentNotValidException ex,

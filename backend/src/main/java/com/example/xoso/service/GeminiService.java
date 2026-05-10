@@ -25,8 +25,8 @@ public class GeminiService {
   @Value("${gemini.api.key}")
   private String geminiApiKey;
 
-  private static final String GEMINI_URL =
-      "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent";
+  @Value("${gemini.api.url}")
+  private String geminiApiUrl;
 
   private final HttpClient httpClient = HttpClient.newBuilder()
       .connectTimeout(Duration.ofSeconds(10))
@@ -69,7 +69,7 @@ public class GeminiService {
    * @param ocrText văn bản OCR thô từ Google Vision
    * @return TicketInfoResponse chứa số vé, ngày xổ số, đài xổ số
    */
-  public TicketInfoResponse parseTicketInfo(String ocrText) throws Exception {
+  public TicketInfoResponse parseTicketInfo(String ocrText) {
     ObjectNode root = mapper.createObjectNode();
     ArrayNode contents = mapper.createArrayNode();
     ObjectNode contentNode = mapper.createObjectNode();
@@ -81,30 +81,39 @@ public class GeminiService {
     contents.add(contentNode);
     root.set("contents", contents);
 
-    // Cấu hình thinkingLevel để nhanh hơn
-    // ObjectNode genConfig = mapper.createObjectNode();
-    // ObjectNode thinkingConfig = mapper.createObjectNode();
-    // thinkingConfig.put("thinkingBudget", 0); // disable thinking để phản hồi nhanh
-    // genConfig.set("thinkingConfig", thinkingConfig);
-    // root.set("generationConfig", genConfig);
-
-    String requestBody = mapper.writeValueAsString(root);
+    String requestBody;
+    try {
+        requestBody = mapper.writeValueAsString(root);
+    } catch (Exception e) {
+        throw new com.example.xoso.exception.TicketAnalysisException("Lỗi build request body cho Gemini", e);
+    }
 
     HttpRequest httpRequest = HttpRequest.newBuilder()
-        .uri(URI.create(GEMINI_URL))
+        .uri(URI.create(geminiApiUrl))
         .header("Content-Type", "application/json")
         .header("x-goog-api-key", geminiApiKey)
         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
         .timeout(Duration.ofSeconds(20))
         .build();
 
-    HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-    if (response.statusCode() != 200) {
-      throw new RuntimeException("Gemini API lỗi: HTTP " + response.statusCode() + " - " + response.body());
+    HttpResponse<String> response;
+    try {
+      response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+    } catch (Exception e) {
+      throw new com.example.xoso.exception.CrawlDataException("Lỗi kết nối Gemini API", e);
     }
 
-    JsonNode responseJson = mapper.readTree(response.body());
+    if (response.statusCode() != 200) {
+      throw new com.example.xoso.exception.TicketAnalysisException("Gemini API lỗi: HTTP " + response.statusCode() + " - " + response.body());
+    }
+
+    JsonNode responseJson;
+    try {
+      responseJson = mapper.readTree(response.body());
+    } catch (Exception e) {
+      throw new com.example.xoso.exception.TicketAnalysisException("Lỗi parse JSON từ Gemini API", e);
+    }
+
     String rawJson = responseJson
         .path("candidates").get(0)
         .path("content").path("parts").get(0)
@@ -116,6 +125,10 @@ public class GeminiService {
       rawJson = rawJson.replaceAll("^```[a-z]*\\n?", "").replaceAll("```$", "").trim();
     }
 
-    return mapper.readValue(rawJson, TicketInfoResponse.class);
+    try {
+      return mapper.readValue(rawJson, TicketInfoResponse.class);
+    } catch (Exception e) {
+      throw new com.example.xoso.exception.TicketAnalysisException("Không thể mapping JSON từ Gemini API sang TicketInfoResponse: " + rawJson, e);
+    }
   }
 }
