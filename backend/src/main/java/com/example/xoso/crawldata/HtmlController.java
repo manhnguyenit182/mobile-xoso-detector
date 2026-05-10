@@ -15,7 +15,7 @@ public class HtmlController {
   @GetMapping("/view-kqxs")
   public ResponseEntity<String> viewKqxs() {
     try {
-      String jsondata = jsoupService.fetchData("https://www.kqxs.vn/mien-nam");
+      String jsondata = jsoupService.fetchData("https://www.kqxs.vn/mien-bac");
       System.out.println("Fetched JSON data: " + jsondata.length() + " characters");
       return ResponseEntity.ok()
           .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE +
