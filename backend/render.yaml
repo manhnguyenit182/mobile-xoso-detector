@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: xoso-backend
+    runtime: docker
+    # Render tự detect Dockerfile trong thư mục này
+    rootDir: .
+    dockerfilePath: ./Dockerfile
+    plan: free
+    # Health check: Render dùng để biết app đã sẵn sàng chưa sau deploy
+    healthCheckPath: /api/ping
+    envVars:
+      - key: TZ
+        value: Asia/Ho_Chi_Minh
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # Các biến bí mật: set giá trị thật trên Render Dashboard, KHÔNG commit vào đây
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: GOOGLE_VISION_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
